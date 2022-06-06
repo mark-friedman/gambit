@@ -10,6 +10,10 @@ function UI(vm, elem) {
 
   var ui = this;
 
+  // To allow for trusting http (i.e. non-https) while locally testing
+  _os_trust_all = true;
+  _os_url_whitelist_add("http://localhost:3000/");
+
   if (!elem) {
     elem = document.createElement('div');
     document.body.appendChild(elem);
