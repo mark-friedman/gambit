@@ -226,3 +226,18 @@ lib/_gambit.rb
 # Library build products, for example:
 # lib/_define-library/_define-library@gambit409003@C/
 *@gambit*@*
+
+# contrib/try build items
+contrib/try/try
+contrib/try/codemirror
+contrib/try/browserfs.min.js
+contrib/try/codemirror-5.59.1.zip
+contrib/try/js\#.scm
+contrib/try/js.scm
+contrib/try/six-expand\#.scm
+contrib/try/six-expand.scm
+contrib/try/VM.js
+contrib/try/VM.min.js
+contrib/try/VM.min.js.gz
+contrib/try/VM.min.js.tmp
+doc/gambit.info-4
