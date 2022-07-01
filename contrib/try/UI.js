@@ -10,9 +10,12 @@ function UI(vm, elem) {
 
   var ui = this;
 
-  // To allow for trusting http (i.e. non-https) while locally testing
+  // ------------ Begin editing by my mark-friedman for Scheme-blocks ---------------
+  // Allow for trusting http (i.e. non-https) while locally testing.
+  // Comment out the next 2 lines for production
   _os_trust_all = true;
   _os_url_whitelist_add("http://localhost:3000/");
+  // ------------ End editing by my mark-friedman for Scheme-blocks ---------------
 
   if (!elem) {
     elem = document.createElement('div');
@@ -58,7 +61,10 @@ function UI(vm, elem) {
   elem.appendChild(editor_mux_elem);
   elem.classList.add('g-h-panes');
 
-  setup_splitter(elem);
+  // ------------ Begin editing by my mark-friedman for Scheme-blocks ---------------
+  // I couldn't get the splitter to work with a vertical orientation of the console and editor panes
+  // setup_splitter(elem);
+  // ------------ End editing by my mark-friedman for Scheme-blocks ---------------
 
   ui.vm = vm;
   ui.elem = elem;
