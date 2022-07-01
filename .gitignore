@@ -241,3 +241,5 @@ contrib/try/VM.min.js
 contrib/try/VM.min.js.gz
 contrib/try/VM.min.js.tmp
 doc/gambit.info-4
+
+.idea/
