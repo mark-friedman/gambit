@@ -20,7 +20,7 @@ body {
   --g-btn-deactivated-background-color: hsl(220, 100%, 85%);
   --g-btn-separator-color: hsl(220, 100%, 80%);
   --g-dropdown-menu-background: var(--g-tab-background-hover);
-  --g-height: 75vh;
+  --g-height: 43vh;
   --g-splitter-width: 0.5em;
   --g-scrollbar-color: var(--g-tab-color-deactivated);
   --g-scrollbar-background: transparent;
@@ -317,6 +317,24 @@ div.g-tab-group > div:last-child > div[data-g-active] {
   flex: 0 0;
   padding: var(--g-height) var(--g-splitter-width) 0 0;
 /*  background-color: rgba(0,0,0,0.1); */
+}
+
+.split {
+  height: 50%;
+  width: 100%;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+.top {
+  top: 0;
+}
+
+.bottom {
+  bottom: 0;
 }
 
 /* Works on Firefox */
