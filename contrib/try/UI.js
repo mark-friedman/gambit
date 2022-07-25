@@ -32,6 +32,7 @@ function UI(vm, elem) {
   // cons_mux_elem.classList.add('g-pane-rigid');
   cons_mux_elem.classList.add('split');
   cons_mux_elem.classList.add('top');
+  // ------------ End editing by my mark-friedman for Scheme-blocks ---------------
   var cons_mux = new Multiplexer(cons_mux_elem, true);
 
   cons_mux.get_more_menu_items = function () {
@@ -43,10 +44,12 @@ function UI(vm, elem) {
   // Create editor multiplexer
 
   var editor_mux_elem = document.createElement('div');
+  // ------------ Begin editing by my mark-friedman for Scheme-blocks ---------------
   // editor_mux_elem.classList.add('g-editor-multiplexer');
   // editor_mux_elem.classList.add('g-pane-elastic');
   editor_mux_elem.classList.add('split');
   editor_mux_elem.classList.add('bottom');
+  // ------------ End editing by my mark-friedman for Scheme-blocks ---------------
   var editor_mux = new Multiplexer(editor_mux_elem, true);
 
   editor_mux.get_more_menu_items = function () {
@@ -62,11 +65,11 @@ function UI(vm, elem) {
 
   elem.innerHTML = '';  // remove all children
   elem.appendChild(cons_mux_elem);
+  // ------------ Begin editing by my mark-friedman for Scheme-blocks ---------------
   // elem.appendChild(splitter_elem);
   elem.appendChild(editor_mux_elem);
   // elem.classList.add('g-h-panes');
 
-  // ------------ Begin editing by my mark-friedman for Scheme-blocks ---------------
   // I couldn't get the splitter to work with a vertical orientation of the console and editor panes
   // setup_splitter(elem);
   // ------------ End editing by my mark-friedman for Scheme-blocks ---------------
