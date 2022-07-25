@@ -27,6 +27,7 @@ function UI(vm, elem) {
   // Create console multiplexer
 
   var cons_mux_elem = document.createElement('div');
+  // ------------ Begin editing by my mark-friedman for Scheme-blocks ---------------
   // cons_mux_elem.classList.add('g-console-multiplexer');
   // cons_mux_elem.classList.add('g-pane-rigid');
   cons_mux_elem.classList.add('split');
@@ -103,7 +104,11 @@ UI.prototype.add_console = function (dev) {
 
   ui.cons_mux.add_channel(dev);
 
-  if (ui.cons_mux.channels.length === 1 && !ui.file_exists('/nodemo')) {
+  // ------------ Begin editing by my mark-friedman for Scheme-blocks ---------------
+  // Only do the demo if file named /demo exists
+  // if (ui.cons_mux.channels.length === 1 && !ui.file_exists('/nodemo')) {
+  if (ui.cons_mux.channels.length === 1 && ui.file_exists('/demo')) {
+    // ------------ End editing by my mark-friedman for Scheme-blocks ---------------
     dev.vm.ui.demo([
       8,
       0, '(display "hello world!\\n")   ;; automatic demo... click console to cancel',
