@@ -4042,6 +4042,154 @@ For example:
 
 @end deffn
 
+@deffn procedure string-prefix-length @var{s1} @var{s2} @r{[}@var{start1} @r{[}@var{end1} @r{[}@var{start2} @r{[}@var{end2}@r{]}@r{]}@r{]}@r{]}
+@deffnx procedure string-prefix-length-ci @var{s1} @var{s2} @r{[}@var{start1} @r{[}@var{end1} @r{[}@var{start2} @r{[}@var{end2}@r{]}@r{]}@r{]}@r{]}
+
+The procedures @code{string-prefix-length} and
+@code{string-prefix-length-ci} return an exact nonnegative integer
+indicating the length of the longest substring of the strings @var{s1}
+and @var{s2} at the start of those strings that are @code{string=?}
+(for @code{string-prefix-length}) or @code{string-ci=?} (for
+@code{string-prefix-length-ci}).  The optional exact nonnegative
+integer parameters @var{start1}, @var{end1}, @var{start2}, and
+@var{end2} delimit the sections of the strings @var{s1} and @var{s2}
+that are considered.  The parameters @var{start1} and @var{start2}
+default to 0, and the parameters @var{end1} and @var{end2} default to
+the length of the strings @var{s1} and @var{s2} respectively.
+
+For example:
+
+@smallexample
+> @b{(string-prefix-length "abracadabra" "abrac123")}
+5
+> @b{(string-prefix-length "abracadabra" "abrac123" 7)}
+4
+> @b{(string-prefix-length "abracadabra" "AbRaC123")}
+0
+> @b{(string-prefix-length-ci "abracadabra" "AbRaC123")}
+5
+@end smallexample
+
+@end deffn
+
+@deffn procedure string-suffix-length @var{s1} @var{s2} @r{[}@var{start1} @r{[}@var{end1} @r{[}@var{start2} @r{[}@var{end2}@r{]}@r{]}@r{]}@r{]}
+@deffnx procedure string-suffix-length-ci @var{s1} @var{s2} @r{[}@var{start1} @r{[}@var{end1} @r{[}@var{start2} @r{[}@var{end2}@r{]}@r{]}@r{]}@r{]}
+
+The procedures @code{string-suffix-length} and
+@code{string-suffix-length-ci} return an exact nonnegative integer
+indicating the length of the longest substring of the strings @var{s1}
+and @var{s2} at the end of those strings that are @code{string=?} (for
+@code{string-suffix-length}) or @code{string-ci=?} (for
+@code{string-suffix-length-ci}).  The optional exact nonnegative
+integer parameters @var{start1}, @var{end1}, @var{start2}, and
+@var{end2} delimit the sections of the strings @var{s1} and @var{s2}
+that are considered.  The parameters @var{start1} and @var{start2}
+default to 0, and the parameters @var{end1} and @var{end2} default to
+the length of the strings @var{s1} and @var{s2} respectively.
+
+For example:
+
+@smallexample
+> @b{(string-suffix-length "abracadabra" "123dabra")}
+5
+> @b{(string-suffix-length "abracadabra" "123dAbRa" 1 4)}
+1
+> @b{(string-suffix-length-ci "abracadabra" "123dAbRa" 1 4)}
+3
+@end smallexample
+
+@end deffn
+
+@deffn procedure string-prefix? @var{s1} @var{s2} @r{[}@var{start1} @r{[}@var{end1} @r{[}@var{start2} @r{[}@var{end2}@r{]}@r{]}@r{]}@r{]}
+@deffnx procedure string-prefix-ci? @var{s1} @var{s2} @r{[}@var{start1} @r{[}@var{end1} @r{[}@var{start2} @r{[}@var{end2}@r{]}@r{]}@r{]}@r{]}
+
+The procedures @code{string-prefix?} and @code{string-prefix-ci?}
+return a boolean indicating whether the string @var{s1} is a substring
+at the start of string @var{s2} when compared with @code{string=?}
+(for @code{string-prefix?}) or @code{string-ci=?} (for
+@code{string-prefix-ci?}).  The optional exact nonnegative integer
+parameters @var{start1}, @var{end1}, @var{start2}, and @var{end2}
+delimit the sections of the strings @var{s1} and @var{s2} that are
+considered.  The parameters @var{start1} and @var{start2} default to
+0, and the parameters @var{end1} and @var{end2} default to the length
+of the strings @var{s1} and @var{s2} respectively.
+
+For example:
+
+@smallexample
+> @b{(string-prefix? "ab" "abracadabra")}
+#t
+> @b{(string-prefix? "ab" "Abracadabra")}
+#f
+> @b{(string-prefix? "ab" "Abracadabra" 0 2 7)}
+#t
+> @b{(string-prefix-ci? "ab" "ABracadabra")}
+#t
+@end smallexample
+
+@end deffn
+
+@deffn procedure string-suffix? @var{s1} @var{s2} @r{[}@var{start1} @r{[}@var{end1} @r{[}@var{start2} @r{[}@var{end2}@r{]}@r{]}@r{]}@r{]}
+@deffnx procedure string-suffix-ci? @var{s1} @var{s2} @r{[}@var{start1} @r{[}@var{end1} @r{[}@var{start2} @r{[}@var{end2}@r{]}@r{]}@r{]}@r{]}
+
+The procedures @code{string-suffix?} and @code{string-suffix-ci?}
+return a boolean indicating whether the string @var{s1} is a substring
+at the end of string @var{s2} when compared with @code{string=?}
+(for @code{string-suffix?}) or @code{string-ci=?} (for
+@code{string-suffix-ci?}).  The optional exact nonnegative integer
+parameters @var{start1}, @var{end1}, @var{start2}, and @var{end2}
+delimit the sections of the strings @var{s1} and @var{s2} that are
+considered.  The parameters @var{start1} and @var{start2} default to
+0, and the parameters @var{end1} and @var{end2} default to the length
+of the strings @var{s1} and @var{s2} respectively.
+
+For example:
+
+@smallexample
+> @b{(string-suffix? "ra" "abracadabra")}
+#t
+> @b{(string-suffix? "ra" "abracadabrA")}
+#f
+> @b{(string-suffix? "ra" "abracadabrA" 0 2 0 4)}
+#t
+> @b{(string-suffix-ci? "ra" "abracadabrA")}
+#t
+@end smallexample
+
+@end deffn
+
+@deffn procedure string-contains @var{s1} @var{s2} @r{[}@var{start1} @r{[}@var{end1} @r{[}@var{start2} @r{[}@var{end2}@r{]}@r{]}@r{]}@r{]}
+@deffnx procedure string-contains-ci @var{s1} @var{s2} @r{[}@var{start1} @r{[}@var{end1} @r{[}@var{start2} @r{[}@var{end2}@r{]}@r{]}@r{]}@r{]}
+
+The procedures @code{string-contains} and @code{string-contains-ci}
+look for the first substring of the string @var{s1} (in a left to
+right traversal) that is equal to the string @var{s1} according to
+@code{string=?}  (for @code{string-contains}) or @code{string-ci=?}
+(for @code{string-contains-ci}).  The result is @code{#f} when the
+string @var{s2} is not found in @var{s1}, otherwise the result is an
+exact nonnegative integer indicating the index in @var{s1} where the
+first occurrence of @var{s2} is found.  The optional exact nonnegative
+integer parameters @var{start1}, @var{end1}, @var{start2}, and
+@var{end2} delimit the sections of the strings @var{s1} and @var{s2}
+that are considered.  The parameters @var{start1} and @var{start2}
+default to 0, and the parameters @var{end1} and @var{end2} default to
+the length of the strings @var{s1} and @var{s2} respectively.
+
+For example:
+
+@smallexample
+> @b{(string-contains "abracadabra" "ra")}
+2
+> @b{(string-contains "abracadabra" "ra" 3)}
+9
+> @b{(string-contains "abracadabra" "Ra")}
+#f
+> @b{(string-contains-ci "abracadabra" "Ra")}
+2
+@end smallexample
+
+@end deffn
+
 @deffn procedure string-concatenate @var{lst} @r{[}@var{separator}@r{]}
 
 This procedure returns a newly allocated string which is the
@@ -5238,7 +5386,13 @@ The procedures in this section are not yet documented.
 @deffn {special form} define-module-alias @dots{}
 @end deffn
 
-@deffn {special form} r7rs-guard @dots{}
+@deffn {special form} guard @dots{}
+@deffnx {special form} r7rs-guard @dots{}
+@end deffn
+
+@deffn procedure r7rs-with-exception-handler @var{handler} @var{thunk}
+@deffnx procedure r7rs-raise @var{obj}
+@deffnx procedure r7rs-raise-continuable @var{obj}
 @end deffn
 
 @deffn {special form} case-lambda @dots{}
@@ -6669,7 +6823,7 @@ source.  The whitelist of trusted sources, which initially contains
 only @code{github.com/gambit}, can be modified using the procedures
 @code{module-whitelist-reset!} and @code{module-whitelist-add!} that
 respectively clear the list and extend the list with the source
-@var{source} which must be a string. The list can also be extended
+@var{source} which must be a string, symbol or list specifying a hosted module reference. The list can also be extended
 with the @code{-:whitelist=}@var{SOURCE} runtime option.
 
 For example:
@@ -15812,13 +15966,22 @@ Name of the Elliptic Curve to use, according to RFC 4492. Used only if
 TCP Client example with TLS encryption.
 
 @smallexample
-(define ctx (make-tls-context))
-(define c (open-tcp-client (list address: "twitter.com"
-                                 port-number: 443
-                                 tls-context: ctx)))
-(display "GET / HTTP/1.1\nHost: twitter.com\n\n" c)
-(force-output c)
-(read-line c)
+(define (https-get host document)
+  (let* ((ctx (make-tls-context))
+         (conn (open-tcp-client (list address: host
+                                      port-number: 443
+                                      tls-context: ctx))))
+    (print port: conn
+           "GET " document " HTTP/1.1\n"
+           "Host: " host "\n"
+           "Connection: close\n"
+           "\n")
+    (force-output conn)
+    (let ((string (read-line conn #f)))
+      (close-port conn)
+      string)))
+
+(display (https-get "example.com" "/"))
 @end smallexample
 
 TCP Server example with several options. These are not mandatory, except
@@ -17518,14 +17681,35 @@ such as a closing parenthesis).  For example @code{(f \2*n (list)
 @item
 @meta{import stat} @syntaxdef{}
 @item
-@syntaxspc{}@code{import} @meta{expr} @code{;} @tab @code{(six.import @var{$2})}
+@syntaxspc{}@code{import} @meta{nonempty import clause list} @code{;} @tab @code{(six.import @var{$2}...)}
 
 @item
 @meta{from stat} @syntaxdef{}
 @item
-@syntaxspc{}@code{from} @meta{expr} @code{import} @meta{expr} @code{;} @tab @code{(six.from-import @var{$2} @var{$4})}
+@syntaxspc{}@code{from} @meta{expr} @code{import} @meta{nonempty import clause list} @code{;} @tab @code{(six.from-import @var{$2} @var{$4}...)}
 @item
 @syntaxspc{}@code{from} @meta{expr} @code{import} @code{*} @code{;} @tab @code{(six.from-import-* @var{$2})}
+
+@item
+@meta{import clause} @syntaxdef{}
+@item
+@syntaxspc{}@meta{expr1} @code{as} @meta{expr2} @tab @code{(six.xasy @var{$1} @var{$3})}
+@item
+@syntaxbar{}@meta{expr1} @tab @var{$1}
+
+@item
+@meta{import clause list} @syntaxdef{}
+@item
+@syntaxspc{}@meta{nonempty import clause list} @tab @code{(@var{$1}...)}
+@item
+@syntaxbar{}@tab @code{()}
+
+@item
+@meta{nonempty import clause list} @syntaxdef{}
+@item
+@syntaxspc{}@meta{import clause} @tab @code{(@var{$1})}
+@item
+@syntaxbar{}@meta{import clause} @code{,} @meta{nonempty import clause list} @tab @code{(@var{$1} @var{$3}...)}
 
 @item
 @meta{expression stat} @syntaxdef{}
@@ -17957,8 +18141,8 @@ associativity and precedence of operators cannot be changed as that is
 a syntactic issue, so this will give a left associative exponentiation
 operator with an unusual precedence.
 
-The following identifiers do not have a predefined semantics (they
-are undefined identifiers):
+Note that some identifiers do not have a predefined semantics and
+are undefined identifiers, for example:
 @code{six.label}, @code{six.goto}, @code{six.switch}, @code{six.case},
 @code{six.break}, @code{six.continue}, @code{six.return},
 @code{six.clause}, @code{six.x:-y}, @code{six.@@}, @code{six.@@=},
@@ -18604,7 +18788,7 @@ Just after the program is loaded and before control is passed to the
 Scheme code, each C file is initialized by calling its associated
 initialization function.  The body of this function is normally empty
 but it can be extended by using the @code{c-initialize} form.  Each
-occurence of the @code{c-initialize} form adds code to the body of the
+occurrence of the @code{c-initialize} form adds code to the body of the
 initialization function in the order of appearance in the source file.
 @i{c-code} must be a string containing the C code to execute.  This
 string is copied to the C file on a new line so it can start with

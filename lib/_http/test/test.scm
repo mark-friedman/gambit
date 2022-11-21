@@ -3,6 +3,7 @@
 ;;; File: "test.scm"
 
 ;;; Copyright (c) 2019 by Frédéric Hamel, All Rights Reserved.
+;;; Copyright (c) 2022 by Marc Feeley, All Rights Reserved.
 
 ;;;============================================================================
 
@@ -114,7 +115,7 @@
                                  (define (handle-request version attributes)
                                    (let ((path (uri-path uri)))
                                      (cond
-                                       ((##string-prefix=? path "/identity")
+                                       ((##string-prefix? "/identity" path)
                                         (display "HTTP/1.1 200 ok\r\nContent-Type: text/plain\r\nContent-Length: " conn)
                                         (display (string-length path) conn)
                                         (display "\r\n\r\n" conn)
@@ -124,7 +125,7 @@
 
                                         (loop (read serv-port)))
 
-                                       ((##string-prefix=? path "/chunked")
+                                       ((##string-prefix? "/chunked" path)
                                         (display "HTTP/1.1 200 ok\r\nContent-Type: text/plain\r\nTransfer-Encoding: chunked\r\n\r\n" conn)
                                         (let ((msglen (string-length path)))
                                           (let loop2 ((i 0))
@@ -144,7 +145,7 @@
 
                                                 (loop (read serv-port)))))))
 
-                                       ((string=? path "/close")
+                                       ((string=? "/close" path)
                                         ;; return empty body
                                         (display "HTTP/1.1 200 ok\r\nContent-Length: 0\r\n\r\n" conn)
                                         (force-output conn)
@@ -216,5 +217,9 @@
 
     (lambda ()
       (thread-join! (vector-ref http-server 1) 1))))
+
+;; Invalid URL
+(test-error (http-get "//localhost"))
+(test-error (http-get "localhost"))
 
 ;;;============================================================================

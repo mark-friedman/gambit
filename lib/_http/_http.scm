@@ -3,7 +3,7 @@
 ;;; File: "_http.scm"
 
 ;;; Copyright (c) 2019-2020 by Frédéric Hamel, All Rights Reserved.
-;;; Copyright (c) 2020-2021 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 2020-2022 by Marc Feeley, All Rights Reserved.
 
 ;;;============================================================================
 
@@ -70,8 +70,8 @@
                              (reverse rev-header)))
 
                     ((and (not status+msg)
-                          (or (##string-prefix=? line "HTTP/1.0 ")
-                              (##string-prefix=? line "HTTP/1.1 ")))
+                          (or (##string-prefix-strip "HTTP/1.0 " line)
+                              (##string-prefix-strip "HTTP/1.1 " line)))
                      =>
                      (lambda (rest)
                        (let ((end-of-status (string-index-of rest #\space)))
@@ -227,9 +227,10 @@
     (if (not uri)
       (raise (macro-make-http-exception
                (string-append "Invalid url '" url "'")))
-      (let* ((scheme (uri-scheme uri))
+      (let* ((scheme (or (uri-scheme uri) (raise (macro-make-http-exception "No scheme"))))
              (host+port
-              (##string-split-at-char (uri-authority uri) #\:))
+              (##string-split-at-char (or (uri-authority uri)
+                                          (raise (macro-make-http-exception "No authority"))) #\:))
              (tls-context (cond
                             ((string=? scheme "https")
                              (make-tls-context))
