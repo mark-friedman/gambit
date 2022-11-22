@@ -1,6 +1,6 @@
 # Configure template for Gambit system.
 
-# Copyright (c) 1994-2021 by Marc Feeley, All Rights Reserved.
+# Copyright (c) 1994-2022 by Marc Feeley, All Rights Reserved.
 
 # Process this file with autoconf to produce a configure script.
 
@@ -278,6 +278,10 @@ AC_ARG_ENABLE(c-opt,
               ENABLE_C_OPT=$enableval,
               ENABLE_C_OPT=no)
 
+if test "$ENABLE_C_OPT" != no; then
+  BOOTSTRAP_CONFIGURE_FLAGS="$BOOTSTRAP_CONFIGURE_FLAGS --enable-c-opt=$ENABLE_C_OPT"
+fi
+
 ###############################################################################
 #
 # Check if a specific C optimization level should be used for the RTS.  An
@@ -289,6 +293,10 @@ AC_ARG_ENABLE(c-opt-rts,
                              [use specified C optimization level for the RTS (default is the highest supported by the compiler)]),
               ENABLE_C_OPT_RTS=$enableval,
               ENABLE_C_OPT_RTS=yes)
+
+if test "$ENABLE_C_OPT_RTS" != yes; then
+  BOOTSTRAP_CONFIGURE_FLAGS="$BOOTSTRAP_CONFIGURE_FLAGS --enable-c-opt-rts=$ENABLE_C_OPT_RTS"
+fi
 
 ###############################################################################
 #
@@ -2305,26 +2313,41 @@ if test "$C_COMP_GNUC" = yes; then
 
     # clang does not support these options:
     DASH_fschedule_insns2=""
-    DASH_fno_move_loop_invariants=""
     DASH_fno_keep_inline_dllexport=""
     #DASH_fpermissive=""
+
+    DASH_fexpensive_optimizations=""
+    DASH_fipa_ra=""
+    DASH_fno_ipa_ra=""
+    DASH_fmove_loop_invariants=""
+    DASH_fno_move_loop_invariants=""
+    DASH_fgcse=""
+    DASH_fno_gcse=""
+
     DASH_mieee=""
     DASH_mieee_with_inexact=""
     DASH_mpc64=""
-    DASH_fno_ipa_ra=""
 
   else
 
     # optimization options:
     AC_CHECK_C_COMPILER_OPT(-fschedule-insns2,DASH_fschedule_insns2)
-    AC_CHECK_C_COMPILER_OPT(-fno-move-loop-invariants,DASH_fno_move_loop_invariants)
     AC_CHECK_C_COMPILER_OPT(-fno-keep-inline-dllexport,DASH_fno_keep_inline_dllexport)
     #AC_CHECK_C_COMPILER_OPT(-fpermissive,DASH_fpermissive)
+
+    AC_CHECK_C_COMPILER_OPT(-fexpensive-optimizations,DASH_fexpensive_optimizations)
+    AC_CHECK_C_COMPILER_OPT(-fipa-ra,DASH_fipa_ra)
+    AC_CHECK_C_COMPILER_OPT(-fno-ipa-ra,DASH_fno_ipa_ra)
+    AC_CHECK_C_COMPILER_OPT(-fmove-loop-invariants,DASH_fmove_loop_invariants)
+    AC_CHECK_C_COMPILER_OPT(-fno-move-loop-invariants,DASH_fno_move_loop_invariants)
+    AC_CHECK_C_COMPILER_OPT(-fgcse,DASH_fgcse)
+    AC_CHECK_C_COMPILER_OPT(-fno-gcse,DASH_fno_gcse)
 
     # machine specific options:
     AC_CHECK_C_COMPILER_OPT(-mieee,DASH_mieee)
     AC_CHECK_C_COMPILER_OPT(-mieee-with-inexact,DASH_mieee_with_inexact)
     AC_CHECK_C_COMPILER_OPT(-mpc64,DASH_mpc64)
+
   fi
 
   # preprocessor options:
@@ -2356,8 +2379,6 @@ if test "$C_COMP_GNUC" = yes; then
   AC_CHECK_C_COMPILER_OPT(-fwrapv,DASH_fwrapv)
   AC_CHECK_C_COMPILER_OPT(-ftrapv,DASH_ftrapv)
   AC_CHECK_C_COMPILER_OPT(-fomit-frame-pointer,DASH_fomit_frame_pointer)
-  AC_CHECK_C_COMPILER_OPT(-fno-ipa-ra, DASH_fno_ipa_ra)
-  AC_CHECK_C_COMPILER_OPT(-foptimize-sibling-calls,DASH_foptimize_sibling_calls)
 
   # machine architecture option:
   if test "$ENABLE_MARCH" != "" -a "$ENABLE_MARCH" != "no_enable_march"; then
@@ -2377,6 +2398,9 @@ if test "$C_COMP_GNUC" = yes; then
   fi
 
   FLAGS_OPT="$FLAGS_OPT_LO"
+  FLAGS_OPT="$FLAGS_OPT$DASH_fexpensive_optimizations"
+  FLAGS_OPT="$FLAGS_OPT$DASH_fno_gcse"
+
   FLAGS_OPT_RTS="$FLAGS_OPT_HI"
 
   case "$ENABLE_C_OPT" in
@@ -2485,9 +2509,17 @@ if test "$C_COMP_GNUC" = yes; then
   fi
 
   if test "$ENABLE_DEBUG" = yes; then
-    FLAGS_OPT=""
-    FLAGS_OPT_RTS=""
+
+    if test "$ENABLE_C_OPT" = no; then
+      FLAGS_OPT=""
+    fi
+
+    if test "$ENABLE_C_OPT_RTS" = yes; then
+      FLAGS_OPT_RTS=""
+    fi
+
     FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_g$DASH_ftrapv"
+
   else
     # TODO: remove the use of -fwrapv once runtime system is cleaned up
     FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_fwrapv"
@@ -2501,7 +2533,6 @@ if test "$C_COMP_GNUC" = yes; then
   FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_fno_math_errno"
   FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_fschedule_insns2"
   FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_fno_keep_inline_dllexport"
-  FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_foptimize_sibling_calls"
 
 #  if test "$ENABLE_CPLUSPLUS" = yes; then
 #    FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_fpermissive"
@@ -2532,10 +2563,14 @@ if test "$C_COMP_GNUC" = yes; then
 
   if test "$GNU_GCC_IPA_RA_POSSIBLE_BUG" = yes; then
     FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_fno_ipa_ra"
+  else
+    FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_fipa_ra"
   fi
 
   if test "$GNU_GCC_MOVE_LOOP_INVARIANTS_POSSIBLE_BUG" = yes; then
     FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_fno_move_loop_invariants"
+  else
+    FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_fmove_loop_invariants"
   fi
 
   FLAGS_OBJ_DYN="$FLAGS_OBJ_DYN$DASH_march"
@@ -2602,6 +2637,17 @@ else if test "$C_COMP_VISUALC" = yes; then
       no) ;;
 
        *) FLAGS_OPT=" $ENABLE_C_OPT"
+          ;;
+
+  esac
+  case "$ENABLE_C_OPT_RTS" in
+
+     yes) ;;
+
+      no) FLAGS_OPT_RTS="$FLAGS_OPT_LO"
+          ;;
+
+       *) FLAGS_OPT_RTS=" $ENABLE_C_OPT_RTS"
           ;;
 
   esac

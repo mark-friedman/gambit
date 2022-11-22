@@ -1191,6 +1191,15 @@
 #ifdef ___MULTIPLE_HOSTS
 #error "Define either ___SINGLE_HOST or ___MULTIPLE_HOSTS"
 #endif
+#ifndef ___SINGLE_HOST_ENFORCE
+/* downgrade to multiple C host procedures when code is very big */
+#ifdef ___LBLCOUNT
+#if ___LBLCOUNT >= 30000
+#undef ___SINGLE_HOST
+#define ___MULTIPLE_HOSTS
+#endif
+#endif
+#endif
 #else
 #ifndef ___MULTIPLE_HOSTS
 #define ___MULTIPLE_HOSTS
@@ -1362,6 +1371,18 @@
 #endif
 #endif
 
+#endif
+
+#ifdef ___INLINE_JUMPS
+#ifdef ___DONT_INLINE_JUMPS
+#error "Define either ___INLINE_JUMPS or ___DONT_INLINE_JUMPS"
+#endif
+#else
+#ifndef ___DONT_INLINE_JUMPS
+#if __llvm__ || __clang__
+#define ___DONT_INLINE_JUMPS
+#endif
+#endif
 #endif
 
 /*
@@ -4796,15 +4817,19 @@ ___FIELD(___FIELD(thread,___THREAD_CONT),___CONTINUATION_FRAME) = frame;
 
 #define ___CONDVAR_NAME 10
 
-#define ___THREAD_CONT           23
-#define ___THREAD_DENV           24
-#define ___THREAD_DENV_CACHE1    25
-#define ___THREAD_DENV_CACHE2    26
-#define ___THREAD_DENV_CACHE3    27
-#define ___THREAD_LAST_PROCESSOR 33
+#define ___THREAD_CONT            23
+#define ___THREAD_DENV            24
+#define ___THREAD_DENV_CACHE1     25
+#define ___THREAD_DENV_CACHE2     26
+#define ___THREAD_DENV_CACHE3     27
+#define ___THREAD_INTERRUPTS_HEAD 32
+#define ___THREAD_INTERRUPTS_TAIL 33
+#define ___THREAD_LAST_PROCESSOR  34
 
-#define ___PROCESSOR_SIZE           21
-#define ___PROCESSOR_CURRENT_THREAD 14
+#define ___PROCESSOR_SIZE            22
+#define ___PROCESSOR_CURRENT_THREAD  14
+#define ___PROCESSOR_INTERRUPTS_HEAD 20
+#define ___PROCESSOR_INTERRUPTS_TAIL 21
 
 #define ___VM_SIZE 20
 
@@ -5154,14 +5179,13 @@ ___EXT(___register_host_entry) (___PSP ___start, ___MODULE_NAME, __FILE__, __LIN
 #define ___DEF_HLBL(id)&&id,
 #define ___END_HLBL \
 0}; \
-___pc=___ps->pc; \
+___pc=___ps->pc; ___R_ALL ___start=___MLBL(___HOST_LBL0); \
 if (___EXPECT_FALSE(___pc == ___FIX(0))) { \
   ___ps->pc = ___CAST(___WORD,___hlbltbl); \
   return; \
 }
 
 #define ___BEGIN_SW \
-___R_ALL ___start=___MLBL(___HOST_LBL0); \
 ___REGISTER_HOST_ENTRY \
 goto *___LABEL_HOST_LABEL_GET(___pc);
 
@@ -5172,11 +5196,7 @@ goto *___LABEL_HOST_LABEL_GET(___pc);
 #define ___END_SW \
 ___jumpext:
 
-#define ___JUMP(dest) \
-{___pc=dest; \
- if (___EXPECT_TRUE(___LABEL_HOST_GET(___pc) == ___HOST_PROC)) \
-   goto *___LABEL_HOST_LABEL_GET(___pc); \
- goto ___jumpext;}
+#define ___JUMP(dest)___JUMPFAST(dest)
 
 #else
 
@@ -5192,6 +5212,13 @@ ___jumpext:
 
 #define ___JUMPEXT(dest){___pc=dest;goto ___jumpext;}
 
+#define ___JUMPFAST(dest) \
+{___pc=dest; \
+ if (___EXPECT_FALSE(___LABEL_HOST_GET(___pc) != ___HOST_PROC)) \
+   goto ___jumpext; \
+ goto *___LABEL_HOST_LABEL_GET(___pc); \
+}
+
 #else
 
 #define ___MODULE_FLAGS 0
@@ -5199,10 +5226,9 @@ ___jumpext:
 #define ___BEGIN_HLBL
 #define ___DEF_HLBL_INTRO
 #define ___DEF_HLBL(id)
-#define ___END_HLBL
+#define ___END_HLBL ___pc=___ps->pc; ___R_ALL ___start=___MLBL(___HOST_LBL0);
 
 #define ___BEGIN_SW \
-___R_ALL ___start=___MLBL(___HOST_LBL0); ___pc=___ps->pc; \
 ___REGISTER_HOST_ENTRY \
 ___jump: \
 switch((___pc-=___start)/(___LABEL_SIZE*___WS)) \
@@ -5215,6 +5241,7 @@ switch((___pc-=___start)/(___LABEL_SIZE*___WS)) \
 
 #define ___JUMP(dest){___pc=dest;goto ___jump;}
 #define ___JUMPEXT(dest){___pc=dest;goto ___jumpext;}
+#define ___JUMPFAST(dest)___JUMP(dest)
 
 #endif
 
@@ -6319,6 +6346,11 @@ switch (na) \
 {nargs ___SELF=val; \
 ___JUMPEXT(___LABEL_ENTRY_GET(___SELF))}
 #define ___JUMPPRM(nargs,val){nargs ___JUMP(val)}
+#ifdef ___DONT_INLINE_JUMPS
+#define ___JUMPRET(val)___JUMP(val)
+#else
+#define ___JUMPRET(val)___JUMPFAST(val)
+#endif
 
 #define ___JUMPNOTSAFE(nargs,val) \
 {nargs ___SELF=val; \
@@ -6703,15 +6735,25 @@ ___BEGIN_ALLOC_SUBTYPED(___MAKE_HD_WORDS(n,___sBOXVALUES));
 #define ___INTR_HEARTBEAT  2
 #define ___INTR_USER       3
 #define ___INTR_GC         4
-#define ___INTR_HIGH_LEVEL 5
+#define ___INTR_OTHER      5
 
 #define ___INTERRUPT_FLAGS() (___ps->intr_flag[0]|___ps->intr_flag[1]|___ps->intr_flag[2]|___ps->intr_flag[3]|___ps->intr_flag[4]|___ps->intr_flag[5])
 
-#define ___INTERRUPT_REQ(x, mask) (((x) & ___ps->intr_enabled & ~mask) != ___FIX(0))
+#define ___INTERRUPT_AFTER_MASKING(flags) \
+((flags) & ___ps->intr_enabled & ~___ps->intr_mask)
+
+#define ___INTERRUPT_REQ(flags) \
+(___INTERRUPT_AFTER_MASKING(flags) != ___FIX(0))
+
+#define ___STACK_TRIP_ON_IF_INTERRUPT_REQ() \
+if (___INTERRUPT_REQ(___INTERRUPT_FLAGS())) \
+  ___STACK_TRIP_ON()
 
 #define ___INTERRUPT_MASK_SET(mask) \
-if (___INTERRUPT_REQ(___INTERRUPT_FLAGS(), (___ps->intr_mask = mask))) \
-  ___STACK_TRIP_ON()
+do { \
+  ___ps->intr_mask = (mask); \
+  ___STACK_TRIP_ON_IF_INTERRUPT_REQ(); \
+} while (0)
 
 #define ___STACK_TRIP_ON()___ps->stack_trip = ___ps->stack_start
 #define ___STACK_TRIP_OFF()___ps->stack_trip = ___ps->stack_limit
@@ -9277,7 +9319,7 @@ ___EXT(___emulated_shared_memory_barrier)()
 ((___ps->temp1 = *(p)) == (oldval) && (*(p) = (newval)), ___ps->temp1)
 
 #define ___FETCH_AND_ADD_WORD(p,val) \
-(___ps->temp1 = *(p), *(p) += (val), ___ps->temp1)
+((*(p) += (val)) - (val))
 
 #define ___FETCH_AND_CLEAR_WORD(p) \
 (___ps->temp1 = *(p), *(p) = 0, ___ps->temp1)
@@ -9333,7 +9375,7 @@ typedef struct ___ticketlock_struct
 
 typedef struct ___ticketlock_location
   {
-    ___VOLATILE ___WORD *id;
+    ___WORD * ___VOLATILE id;
     ___VOLATILE int lock_op;
     ___VOLATILE ___source_location location;
   } ___ticketlock_location;
@@ -9769,6 +9811,16 @@ typedef struct ___gstate_mem_struct {
 
 } ___gstate_mem;
 
+/*
+ * Header structure of procedural interrupts.
+ */
+
+typedef struct ___procedural_interrupt_header_struct
+  {
+    struct ___procedural_interrupt_header_struct * ___VOLATILE next;
+    ___SCMOBJ (*execute_fn) ___P((void *self, ___SCMOBJ op),());
+  } ___procedural_interrupt_header;
+
 /*---------------------------------------------------------------------------*/
 
 typedef struct ___processor_state_struct *___processor_state;
@@ -9836,6 +9888,11 @@ typedef struct ___processor_state_struct
     ___WORD intr_enabled; /* global interrupt enable */
     ___WORD intr_mask; /* 1 bit means interrupt disabled */
     ___VOLATILE ___WORD intr_flag[___NB_INTRS];
+
+    /* queue of procedural interrupts */
+    ___procedural_interrupt_header * ___VOLATILE procedural_interrupts_head;
+    ___procedural_interrupt_header * ___VOLATILE procedural_interrupts_tail;
+    ___MUTEX_DECL(procedural_interrupts_mut)
 
     ___WORD processor_scmobj[___SUBTYPED_BODY+___PROCESSOR_SIZE+___PADDING_SIZE]; /* Scheme processor object */
 
@@ -11396,6 +11453,13 @@ typedef struct ___global_state_struct
     void (*___kill_sfun_stack_marker)
        ___P((___SCMOBJ marker),
             ());
+    void *(*___alloc_rc_no_register)
+       ___P((___SIZE_T bytes),
+            ());
+    void *(*___register_rc)
+       ___P((___PSD
+             void *ptr),
+            ());
     void *(*___alloc_rc)
        ___P((___PSD
              ___SIZE_T bytes),
@@ -11619,6 +11683,18 @@ typedef struct ___global_state_struct
              char *filename),
            ());
 #endif
+    void (*___raise_high_level_interrupt_pstate)
+       ___P((___processor_state ___ps,
+             ___SCMOBJ intr),
+            ());
+    void (*___init_procedural_interrupt)
+       ___P((void *intr,
+             ___SCMOBJ (*execute_fn) ___P((void *self, ___SCMOBJ op),())),
+            ());
+    void (*___raise_procedural_interrupt_pstate)
+       ___P((___processor_state ___ps,
+             void *intr),
+            ());
     void (*___raise_interrupt_pstate)
        ___P((___processor_state ___ps,
              int code),
@@ -11630,16 +11706,11 @@ typedef struct ___global_state_struct
     void (*___raise_interrupt)
        ___P((int code),
             ());
-    void (*___begin_interrupt_service_pstate)
+    ___SCMOBJ (*___service_interrupts_pstate)
        ___P((___processor_state ___ps),
             ());
-    ___BOOL (*___check_interrupt_pstate)
-       ___P((___processor_state ___ps,
-             int code),
-            ());
-    void (*___end_interrupt_service_pstate)
-       ___P((___processor_state ___ps,
-             int code),
+    void (*___refresh_interrupts_pstate)
+       ___P((___processor_state ___ps),
             ());
     void (*___disable_interrupts_pstate)
        ___P((___processor_state ___ps),
@@ -11712,6 +11783,16 @@ typedef struct ___global_state_struct
     void (*___free_mem_code)
        ___P((void *ptr),
             ());
+    ___SCMOBJ (*___thread_init_from_self)
+       ___P((___thread *thread),
+            ());
+    ___SCMOBJ (*___thread_create)
+       ___P((___thread *thread),
+            ());
+    ___SCMOBJ (*___thread_join)
+       ___P((___thread *thread),
+            ());
+    void (*___thread_exit) ___PVOID;
 #ifdef ___USE_emulated_sync
     ___WORD (*___emulated_compare_and_swap_word)
        ___P((___VOLATILE ___WORD *ptr,
@@ -12709,6 +12790,13 @@ ___IMP_FUNC(void,___kill_sfun_stack_marker)
 #endif
 
 #ifndef ___INCLUDED_FROM_MEM
+___IMP_FUNC(void*,___alloc_rc_no_register)
+   ___P((___SIZE_T bytes),
+        ());
+___IMP_FUNC(void*,___register_rc)
+   ___P((___PSD
+         void *ptr),
+        ());
 ___IMP_FUNC(void*,___alloc_rc)
    ___P((___PSD
          ___SIZE_T bytes),
@@ -13066,6 +13154,18 @@ ___IMP_FUNC(void,___actlog_dump)
          char *filename),
         ());
 #endif
+___IMP_FUNC(void,___raise_high_level_interrupt_pstate)
+   ___P((___processor_state ___ps,
+         ___SCMOBJ intr),
+        ());
+___IMP_FUNC(void,___init_procedural_interrupt)
+   ___P((void *intr,
+         ___SCMOBJ (*execute_fn) ___P((void *self, ___SCMOBJ op),())),
+        ());
+___IMP_FUNC(void,___raise_procedural_interrupt_pstate)
+   ___P((___processor_state ___ps,
+         void *intr),
+        ());
 ___IMP_FUNC(void,___raise_interrupt_pstate)
    ___P((___processor_state ___ps,
          int code),
@@ -13077,16 +13177,11 @@ ___IMP_FUNC(void,___raise_interrupt_vmstate)
 ___IMP_FUNC(void,___raise_interrupt)
    ___P((int code),
         ());
-___IMP_FUNC(void,___begin_interrupt_service_pstate)
+___IMP_FUNC(___SCMOBJ,___service_interrupts_pstate)
    ___P((___processor_state ___ps),
         ());
-___IMP_FUNC(___BOOL,___check_interrupt_pstate)
-   ___P((___processor_state ___ps,
-         int code),
-        ());
-___IMP_FUNC(void,___end_interrupt_service_pstate)
-   ___P((___processor_state ___ps,
-         int code),
+___IMP_FUNC(void,___refresh_interrupts_pstate)
+   ___P((___processor_state ___ps),
         ());
 ___IMP_FUNC(void,___disable_interrupts_pstate)
    ___P((___processor_state ___ps),
@@ -13189,6 +13284,16 @@ ___IMP_FUNC(void,___free_mem_code)
 #endif
 
 #ifndef ___INCLUDED_FROM_OS_THREAD
+___IMP_FUNC(___SCMOBJ,___thread_init_from_self)
+   ___P((___thread *thread),
+        ());
+___IMP_FUNC(___SCMOBJ,___thread_create)
+   ___P((___thread *thread),
+        ());
+___IMP_FUNC(___SCMOBJ,___thread_join)
+   ___P((___thread *thread),
+        ());
+___IMP_FUNC(void,___thread_exit) ___PVOID;
 #ifdef ___USE_emulated_sync
 ___IMP_FUNC(___WORD,___emulated_compare_and_swap_word)
    ___P((___VOLATILE ___WORD *ptr,

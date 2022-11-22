@@ -2,7 +2,7 @@
 
 ;;; File: "_eval#.scm"
 
-;;; Copyright (c) 1994-2021 by Marc Feeley, All Rights Reserved.
+;;; Copyright (c) 1994-2022 by Marc Feeley, All Rights Reserved.
 
 ;;;============================================================================
 
@@ -44,10 +44,11 @@
 (##define-macro (macro-true? x) x)
 (##define-macro (macro-unbound? x) `(##unbound? ,x))
 
-(##define-macro (macro-self-var)     ''##self##)
-(##define-macro (macro-selector-var) ''##selector##)
-(##define-macro (macro-do-loop-var)  ''##do-loop##)
-(##define-macro (macro-guard-var)    ''##guard##)
+(##define-macro (macro-self-var)       ''##self##)
+(##define-macro (macro-selector-var)   ''##selector##)
+(##define-macro (macro-do-loop-var)    ''##do-loop##)
+(##define-macro (macro-guard-exc-var)  ''##guard-exc##)
+(##define-macro (macro-guard-cont-var) ''##guard-cont##)
 
 ;;;----------------------------------------------------------------------------
 
@@ -235,7 +236,7 @@
              '() ;; demand-modules
              (##make-meta-info) ;; meta-info
              #f ;; module-ref
-             '() ;; module-aliases
+             ##default-module-aliases ;; module-aliases
              target
              (##make-extra-info))) ;; extra-info
 

@@ -159,6 +159,9 @@ error
 ;;UNIMPLEMENTED permission-denied-exception?
 ;;UNIMPLEMENTED primordial-exception-handler
 
+r7rs-raise
+r7rs-raise-continuable
+r7rs-with-exception-handler
 raise
 
 ;;UNIMPLEMENTED range-exception-arg-num
@@ -1399,10 +1402,20 @@ utf8->string
 
 ;; gambit
 
-string-concatenate
 string-ci=?-hash
+string-concatenate
+string-contains
+string-contains-ci
+string-prefix-ci?
+string-prefix-length
+string-prefix-length-ci
+string-prefix?
 string-set
 string-shrink!
+string-suffix-ci?
+string-suffix-length
+string-suffix-length-ci
+string-suffix?
 string=?-hash
 substring-fill!
 substring-move!
